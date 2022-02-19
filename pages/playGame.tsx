@@ -1,7 +1,9 @@
 import {NextPage} from "next";
-import {MouseEventHandler, useEffect, useState} from "react";
+import React, {FC, MouseEventHandler, useEffect, useState} from "react";
 import {CountryGdpData, fetchCountryGdp} from "../data/fetchCountryGdp";
 import {passThroughSymbol} from "next/dist/server/web/spec-compliant/fetch-event";
+import {func} from "prop-types";
+
 
 function numFormatter(num: number) {
     if (num > 999 && num < 1000000) {
@@ -39,32 +41,25 @@ type GuessItem = {
 }
 
 
-const Cards: React.FC<{
+const Cards: FC<{
     firstItem: GuessItem;
     secondItem: GuessItem;
     fillerWords: string;
-}> = ({firstItem, secondItem, fillerWords}) => {
-    return (
-        <div>
-            <div className={"leftCard"}>
-                {firstItem.name + " " + fillerWords + " " + firstItem.displayedValue}
-            </div>
-            <div className={"rightCard"}>
-                {secondItem.name + " " + fillerWords + " "}
-                <HigherOrLowerButtons/>
-            </div>
+    onSelection: (selectedHigher: boolean) => void
+}> = ({firstItem, secondItem, fillerWords, onSelection}) => {
 
-        </div>
-    )
+
 }
 
 
-const HigherOrLowerButtons = (onSelection: (selectedHigher: boolean) => void) => {
+const HigherOrLowerButtons: FC<{
+    onSelection: (selectedHigher: boolean) => void
+}> = ({onSelection}) => {
     return (
-        <>
+        <div style={{ display: "inline", paddingLeft: 10}}>
             <button onClick={() => onSelection(true)}> Higher</button>
             <button onClick={() => onSelection(false)}> Lower</button>
-        </>
+        </div>
     )
 }
 
@@ -81,7 +76,7 @@ const PlayGame: React.FC<{
     const FILLER_WORDS = "has a GDP of"
     const [guessItems, setGuessItems] = useState<GuessItem[]>([])
     const [currIndex, setCurrIndex] = useState<number>(0);
-    const [score, setScore] = useState<number>(0);
+    const [gameOver, setGameOver] = useState<boolean>(false);
     const gameMode = GameMode.CountriesGdp;
 
     useEffect(() => {
@@ -110,19 +105,53 @@ const PlayGame: React.FC<{
 
     }, []);
 
+    function onSelection(selectedHigher: boolean) {
+        const firstItemVal = guessItems[currIndex].value;
+        const secondItemVal = guessItems[currIndex + 1].value;
+        if ((firstItemVal === secondItemVal) || (firstItemVal > secondItemVal && !selectedHigher) || (firstItemVal < secondItemVal && selectedHigher)) {
+            setCurrIndex(currIndex + 1);
+        } else {
+            setGameOver(true);
+        }
+    }
+
+    const firstCardValueColor = () => currIndex > 0 ? "green" : "black";
+
     return (
         <>
-            <div>
+            <div style={{ padding: 20 }}>
                 {guessItems.length > 2 &&
-                    <Cards
-                        firstItem={guessItems[currIndex]}
-                        secondItem={guessItems[currIndex + 1]}
-                        fillerWords={FILLER_WORDS}
-                    />
+                <div>
+                    <div className={"firstCard"}>
+                        {guessItems[currIndex].name + " " + FILLER_WORDS + " "}
+                        <div style={{ display: "inline", color: firstCardValueColor()}}>
+                            {guessItems[currIndex].displayedValue}
+                        </div>
+
+                    </div>
+                    <div className={"secondCard"}>
+                        {guessItems[currIndex + 1].name + " " + FILLER_WORDS + " "}
+                        {gameOver &&
+                            <div style={{ display: "inline", color: "red"}}>
+                                {guessItems[currIndex + 1].displayedValue}
+                            </div>
+                        }
+                        {!gameOver && <HigherOrLowerButtons onSelection={onSelection}/>}
+                    </div>
+
+                </div>
                 }
-
-
+                <div>
+                    {gameOver && (
+                        <p>
+                            Incorrect! You finished with a score of {currIndex}!
+                        </p>
+                    )}
+                </div>
+            <footer style={{marginTop: 20 }}> Score: {currIndex}</footer>
             </div>
+
+
         </>
     )
 }
