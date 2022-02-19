@@ -31,26 +31,12 @@ function shuffle(list: any[]) {
     return list;
 }
 
-
-// TODO - generecize types
 type GuessItem = {
     name: string;
     value: number;
     displayedValue: string;
     imageUrl?: string;
 }
-
-
-const Cards: FC<{
-    firstItem: GuessItem;
-    secondItem: GuessItem;
-    fillerWords: string;
-    onSelection: (selectedHigher: boolean) => void
-}> = ({firstItem, secondItem, fillerWords, onSelection}) => {
-
-
-}
-
 
 const HigherOrLowerButtons: FC<{
     onSelection: (selectedHigher: boolean) => void
@@ -68,7 +54,6 @@ enum GameMode {
     CountriesGdp,
     CompaniesMarketCap,
 }
-
 
 const PlayGame: React.FC<{
     // gameMode: GameMode
