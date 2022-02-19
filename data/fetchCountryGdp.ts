@@ -12,5 +12,5 @@ export async function fetchCountryGdp(): Promise<CountryGdpData[]> {
             ({country: x.country.value, countryIso3Code: x.countryiso3code, gdp: x.value}) as CountryGdpData
         ))
     const FIRST_REAL_COUNTRY_INDEX = 49;
-    return countryGdps.slice(49).filter(country => country.gdp);
+    return countryGdps.slice(FIRST_REAL_COUNTRY_INDEX).filter(country => country.gdp);
 }
